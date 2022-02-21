@@ -38,12 +38,7 @@ if (process.env.NODE_ENV === "production") {
     }
     return next();
   });
-  bot.launch({
-    webhook: {
-      domain: config.URL,
-      port: Number(config.PORT),
-    },
-  });
+  bot.launch();
 } else {
   //Development logging
   bot.use(Telegraf.log());

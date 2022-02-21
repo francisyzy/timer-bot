@@ -1,32 +1,28 @@
 {
-  "name": "telegraf-postgresql-template",
+  "name": "timer-bot",
   "version": "0.1.1",
-  "description": "Template for creating future telegram bot apps",
+  "description": "Just a timer bot as for timer purposes",
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "build": "npm run generate && npm run deploy && tsc -p .",
-    "dev": "nodemon src/index.ts",
-    "generate": "prisma generate",
-    "deploy": "prisma migrate deploy",
-    "migrate": "prisma migrate dev",
-    "reset": "prisma migrate reset"
+    "build": "npm run deploy && tsc -p .",
+    "dev": "nodemon src/index.ts"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/francisyzy/telegraf-PostgreSQL-template.git"
+    "url": "git+https://github.com/francisyzy/timer-bot.git"
   },
   "author": "francisyzy",
   "bugs": {
-    "url": "https://github.com/francisyzy/telegraf-PostgreSQL-template/issues"
+    "url": "https://github.com/francisyzy/timer-bot/issues"
   },
-  "homepage": "https://github.com/francisyzy/telegraf-PostgreSQL-template#readme",
+  "homepage": "https://github.com/francisyzy/timer-bot#readme",
   "engines": {
     "node": "17.x"
   },
   "dependencies": {
-    "@prisma/client": "^3.9.2",
     "dotenv": "^16.0.0",
+    "parse-duration": "^1.0.2",
     "qrcode-terminal": "^0.12.0",
     "telegraf": "^4.7.0"
   },
@@ -35,7 +31,6 @@
     "@types/qrcode-terminal": "^0.12.0",
     "nodemon": "^2.0.15",
     "prettier": "^2.5.1",
-    "prisma": "^3.9.2",
     "ts-node": "^10.5.0",
     "typegram": "^3.8.0",
     "typescript": "^4.5.5"
