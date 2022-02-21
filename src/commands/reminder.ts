@@ -11,6 +11,8 @@ import config from "../config";
 const reminder = () => {
   try {
     bot.on("message", (ctx) => {
+      const originalSender = (ctx.message as Message.TextMessage)
+        .forward_from?.username;
       const text = (ctx.message as Message.TextMessage).text;
       const parsedDurationMs = parse(text);
       const currentDate = new Date();
@@ -18,7 +20,42 @@ const reminder = () => {
         currentDate,
         parsedDurationMs,
       );
-      if (parsedDurationMs) {
+      if (originalSender == "chtwrsbot") {
+        const forwardText = (
+          ctx.message as Message.TextMessage
+        ).text.split("\n");
+        let gnomes = false;
+        forwardText.forEach((line) => {
+          if (line.includes("💰Gnomes Money")) {
+            let gnomesMs = parse(line);
+            let gnomesDate = addMilliseconds(currentDate, gnomesMs);
+            const formattedDuration =
+              formatDuration(
+                intervalToDuration({
+                  start: currentDate,
+                  end: gnomesDate,
+                }),
+              ) || gnomesMs + "ms";
+            ctx.reply(
+              `Will remind you about 💰Gnomes Money in ${formattedDuration}`,
+              {
+                reply_to_message_id: ctx.message.message_id,
+              },
+            );
+            setTimeout(() => {
+              ctx.reply("Reminding you about this!", {
+                reply_to_message_id: ctx.message.message_id,
+              });
+            }, gnomesMs);
+            gnomes = true;
+          }
+        });
+        if (!gnomes) {
+          ctx.replyWithHTML(
+            `No Gnomes effect found, <i>For bug reports/suggestions, please create an issue at <a href="http://go.francisyzy.com/timer-bot-issues">Github</a></i>`,
+          );
+        }
+      } else if (parsedDurationMs) {
         const formattedDuration =
           formatDuration(
             intervalToDuration({
