@@ -24,10 +24,13 @@ const reminder = () => {
         const forwardText = (
           ctx.message as Message.TextMessage
         ).text.split("\n");
+        const messageDelay =
+          currentDate.valueOf() -
+          (ctx.message as Message.TextMessage).forward_date! * 1000;
         let gnomes = false;
         forwardText.forEach((line) => {
           if (line.includes("💰Gnomes Money")) {
-            let gnomesMs = parse(line);
+            let gnomesMs = parse(line) - messageDelay;
             let gnomesDate = addMilliseconds(currentDate, gnomesMs);
             const formattedDuration =
               formatDuration(
