@@ -7,7 +7,7 @@ import {
   intervalToDuration,
 } from "date-fns";
 
-const echo = () => {
+const reminder = () => {
   try {
     bot.on("message", (ctx) => {
       const text = (ctx.message as Message.TextMessage).text;
@@ -43,4 +43,4 @@ const echo = () => {
   }
 };
 
-export default echo;
+export default reminder;

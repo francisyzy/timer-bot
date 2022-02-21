@@ -8,7 +8,7 @@ import { printBotInfo } from "./utils/consolePrintUsername";
 
 import bot from "./lib/bot";
 import helper from "./commands/helper";
-import echo from "./commands/echo";
+import reminder from "./commands/reminder";
 import catchAll from "./commands/catch-all";
 
 //Production Settings
@@ -47,7 +47,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 helper();
-echo();
+reminder();
 
 //Catch all unknown messages/commands
 catchAll();
