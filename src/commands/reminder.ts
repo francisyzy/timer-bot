@@ -6,6 +6,7 @@ import {
   formatDuration,
   intervalToDuration,
 } from "date-fns";
+import config from "../config";
 
 const reminder = () => {
   try {
@@ -17,13 +18,14 @@ const reminder = () => {
         currentDate,
         parsedDurationMs,
       );
-      if (
-        futureDate instanceof Date &&
-        !isNaN(futureDate.valueOf())
-      ) {
-        const formattedDuration = formatDuration(
-          intervalToDuration({ start: currentDate, end: futureDate }),
-        );
+      if (parsedDurationMs) {
+        const formattedDuration =
+          formatDuration(
+            intervalToDuration({
+              start: currentDate,
+              end: futureDate,
+            }),
+          ) || parsedDurationMs + "ms";
         ctx.reply(`Will remind you about ^ in ${formattedDuration}`, {
           reply_to_message_id: ctx.message.message_id,
         });
@@ -33,9 +35,27 @@ const reminder = () => {
           });
         }, parsedDurationMs);
       } else {
-        ctx.reply("Invalid entry", {
-          reply_to_message_id: ctx.message.message_id,
-        });
+        if (
+          config.LOG_GROUP_ID &&
+          process.env.NODE_ENV === "production"
+        ) {
+          ctx.telegram.sendMessage(
+            config.LOG_GROUP_ID,
+            "Invalid entry ^",
+          );
+        }
+        if (parsedDurationMs === 0) {
+          ctx.reply("0 is not an accepted value, please try again", {
+            reply_to_message_id: ctx.message.message_id,
+          });
+        } else {
+          ctx.reply(
+            "You have entered an invalid duration, /help to learn more.",
+            {
+              reply_to_message_id: ctx.message.message_id,
+            },
+          );
+        }
       }
     });
   } catch (error) {
