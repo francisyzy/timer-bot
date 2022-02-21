@@ -1,11 +1,11 @@
 {
   "name": "timer-bot",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "Just a timer bot as for timer purposes",
   "main": "dist/index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "build": "npm run deploy && tsc -p .",
+    "build": "tsc -p .",
     "dev": "nodemon src/index.ts"
   },
   "repository": {
