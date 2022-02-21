@@ -15,7 +15,11 @@ import catchAll from "./commands/catch-all";
 if (process.env.NODE_ENV === "production") {
   //Production Logging
   bot.use((ctx, next) => {
-    if (ctx.message && config.LOG_GROUP_ID) {
+    if (
+      ctx.message &&
+      config.LOG_GROUP_ID &&
+      ctx.message.from.id !== config.ADMIN_TELE_ID
+    ) {
       let userInfo: string;
       if (ctx.message.from.username) {
         userInfo = `name: <a href="tg://user?id=${

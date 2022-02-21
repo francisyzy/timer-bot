@@ -7,7 +7,7 @@ const config = {
   DATABASE_URL: process.env.DATABASE_URL,
   API_TOKEN: process.env.API_TOKEN,
   LOG_GROUP_ID: process.env.LOG_GROUP_ID,
-  URL: process.env.URL,
+  ADMIN_TELE_ID: Number(process.env.ADMIN_TELE_ID) || 0,
 };
 
 export default config;
