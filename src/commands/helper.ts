@@ -7,7 +7,7 @@ const helper = () => {
   bot.start((ctx) => {
     ctx.telegram.setMyCommands(getBotCommands());
     return ctx.replyWithHTML(
-      `Welcome to ${bot.botInfo?.first_name} ${ctx.from.first_name}, to set a timer/reminder, simply type <pre>10s Test</pre> to be reminded about that message in 10s. For more examples, /help`,
+      `Welcome to ${bot.botInfo?.first_name}, ${ctx.from.first_name}. To set a timer/reminder, simply type <pre>10s Test</pre> to be reminded about that message in 10s. For more examples, /help`,
     );
   });
 
