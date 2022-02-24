@@ -86,6 +86,7 @@ const reminder = () => {
         });
         if (effectBtn.length !== 0) {
           ctx.reply("Select the effect you want to be reminded of", {
+            reply_to_message_id: ctx.message.message_id,
             ...Markup.removeKeyboard(),
             ...Markup.inlineKeyboard(effectBtn, {
               //set up custom keyboard wraps for two columns
