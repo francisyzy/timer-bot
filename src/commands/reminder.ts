@@ -26,6 +26,9 @@ const users: {
 
 const bootDate = new Date();
 
+//https://stackoverflow.com/a/62002839
+const max = 2147483647; //max 32 bit signed int
+
 const reminder = () => {
   try {
     bot.action(/ .+/, async (ctx) => {
@@ -139,6 +142,7 @@ const reminder = () => {
         })[] = [];
 
         users[index].timers.forEach((timer) => {
+          //TODO stop using private variables
           // @ts-ignore because timer has _destroyed
           if (!timer.timer["_destroyed"]) {
             const futureDate = addMilliseconds(
@@ -209,7 +213,6 @@ const reminder = () => {
         .forward_from?.username;
       const text = (ctx.message as Message.TextMessage).text;
       const parsedDurationMs = parse(text);
-      const max = 2147483647; //max 32 bit signed int
       if (parsedDurationMs > max) {
         return ctx.reply(
           "You have exceeded the maximum amount timeout. Max Timeout: 32-bit signed integer (2147483647ms)",
@@ -237,7 +240,6 @@ const reminder = () => {
             const effectName = line.slice(0, line.indexOf("⏰"));
             const effectDurationMs =
               parse(line.slice(line.indexOf("⏰"))) - messageDelay;
-            const max = 2147483647; //max 32 bit signed int
             if (effectDurationMs > max) {
               return; //https://stackoverflow.com/a/18453035
             }
@@ -347,11 +349,3 @@ const reminder = () => {
 };
 
 export default reminder;
-
-/**
- * Pauses execution for given amount of seconds
- * @param sec - amount of seconds
- */
-function sleep(sec: number) {
-  return new Promise((resolve) => setTimeout(resolve, sec * 1000));
-}
