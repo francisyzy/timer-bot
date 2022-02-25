@@ -7,6 +7,14 @@ export function getBotCommands(): BotCommand[] {
   // Update this list of commands
   const rawBotCommands = [
     {
+      command: "activetimers",
+      description: "Get list of active running timers",
+    },
+    {
+      command: "stats",
+      description: "Find your timer stats",
+    },
+    {
       command: "help",
       description: "Find out more on the bot",
     },

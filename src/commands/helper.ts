@@ -28,7 +28,7 @@ const helper = () => {
     helpMsg +=
       "<i>Most other types of noise:</i>\n<pre>running length: 1hour:20mins</pre> → 1h 20m\n\n";
     helpMsg += `<i>For bug reports, please create an issue at <a href="http://go.francisyzy.com/timer-bot-issues">Github</a></i>`;
-    ctx.replyWithHTML(helpMsg);
+    ctx.replyWithHTML(helpMsg, { disable_web_page_preview: true });
   });
 };
 
