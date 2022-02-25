@@ -4,16 +4,77 @@ import { Markup } from "telegraf";
 import parse from "parse-duration";
 import {
   addMilliseconds,
-  formatDuration,
+  differenceInMilliseconds,
+  formatDuration as formatDurationFns,
   formatISO,
+  formatISO9075,
   intervalToDuration,
+  isSameSecond,
   parseISO,
 } from "date-fns";
 import config from "../config";
+import formatDuration from "format-duration";
+
+const users: {
+  userId: number;
+  timers: {
+    createdAt: Date;
+    timer: NodeJS.Timeout;
+    messageId: number;
+  }[];
+}[] = [];
+
+const bootDate = new Date();
 
 const reminder = () => {
   try {
-    bot.action(/.+/, async (ctx) => {
+    bot.action(/ .+/, async (ctx) => {
+      if (ctx.from === undefined) {
+        return ctx.replyWithHTML(
+          `Bug! You're not a user? If so, please /start at @" +
+            ${
+              (await bot.telegram.getMe()).username
+            } else, report a bug @ <a href="http://go.francisyzy.com/timer-bot-issues">Github</a>`,
+        );
+      }
+
+      ctx.answerCbQuery("Setting up timer/reminder");
+      const callback = ctx.match[0];
+      const createdAt = parseISO(
+        callback.slice(callback.indexOf(" ") + 1),
+      );
+      ctx.editMessageText("Looking for timers/reminder to remove");
+
+      const index = users.findIndex(
+        (user) => user.userId === ctx.from!.id,
+      );
+      if (index === -1) {
+        ctx.reply("No Timers Found");
+      } else {
+        const timer = users[index].timers.find((timer) =>
+          isSameSecond(timer.createdAt, createdAt),
+        );
+        if (timer) {
+          clearTimeout(timer.timer);
+          ctx.reply("Removed the timer/reminder", {
+            reply_to_message_id: timer.messageId,
+          });
+        } else {
+          ctx.reply("Cannot find timer/reminder to remove");
+        }
+      }
+    });
+
+    bot.action(/ .+/, async (ctx) => {
+      if (ctx.from === undefined) {
+        return ctx.replyWithHTML(
+          `Bug! You're not a user? If so, please /start at @" +
+            ${
+              (await bot.telegram.getMe()).username
+            } else, report a bug @ <a href="http://go.francisyzy.com/timer-bot-issues">Github</a>`,
+        );
+      }
+
       ctx.answerCbQuery("Setting up timer/reminder");
       const callback = ctx.match[0];
       const effectName = callback.slice(0, callback.indexOf("⏰"));
@@ -21,7 +82,7 @@ const reminder = () => {
       const effectEndDate = parseISO(
         callback.slice(callback.indexOf("⏰") + 1),
       );
-      const formattedDuration = formatDuration(
+      const formattedDuration = formatDurationFns(
         intervalToDuration({
           start: currentDate,
           end: effectEndDate,
@@ -30,20 +91,120 @@ const reminder = () => {
       const ms = effectEndDate.valueOf() - currentDate.valueOf();
       if (Math.sign(ms) === 1) {
         const replyTo = await ctx.reply(
-          `Will remind you about ${effectName}in ${formattedDuration}`,
+          `Will remind you about:${effectName}in ${formattedDuration}`,
         );
-        setTimeout(() => {
+        const timeout = setTimeout(() => {
           ctx.reply("Reminding you about this!", {
             reply_to_message_id: replyTo.message_id,
           });
         }, ms);
+        const index = users.findIndex(
+          (user) => user.userId === ctx.from!.id,
+        );
+        if (index === -1) {
+          users.push({
+            userId: ctx.from.id,
+            timers: [
+              {
+                createdAt: currentDate,
+                timer: timeout,
+                messageId: replyTo.message_id,
+              },
+            ],
+          });
+        } else {
+          users[index].timers.push({
+            createdAt: currentDate,
+            timer: timeout,
+            messageId: replyTo.message_id,
+          });
+        }
       } else {
         ctx.reply(
           `${effectName}is in the past. Send a new ／effect from @chtwrsbot`,
         );
       }
     });
-    bot.on("message", (ctx) => {
+
+    bot.command("activetimers", (ctx) => {
+      const index = users.findIndex(
+        (user) => user.userId === ctx.from.id,
+      );
+      const currentDate = new Date();
+      if (index === -1) {
+        ctx.reply("No Timers Found");
+      } else {
+        let cancelBtn: (InlineKeyboardButton & {
+          hide?: boolean | undefined;
+        })[] = [];
+
+        users[index].timers.forEach((timer) => {
+          // @ts-ignore because timer has _destroyed
+          if (!timer.timer["_destroyed"]) {
+            const futureDate = addMilliseconds(
+              timer.createdAt,
+              // @ts-ignore because timer has _idleTimeout
+              timer.timer["_idleTimeout"],
+            );
+            const formattedDuration = formatDuration(
+              Math.abs(
+                differenceInMilliseconds(currentDate, futureDate),
+              ),
+            );
+
+            cancelBtn.push(
+              Markup.button.callback(
+                formattedDuration,
+                " " + formatISO(timer.createdAt, { format: "basic" }),
+              ),
+            );
+          }
+        });
+        let returnMessage = "You have no active timers";
+        if (cancelBtn.length === 1) {
+          returnMessage =
+            "Your active timer/reminder (time remaining), press the button to cancel timer";
+        } else if (cancelBtn.length > 1) {
+          returnMessage =
+            "Your active timers/reminders (time remaining), press the button to cancel timer";
+        }
+        ctx.reply(returnMessage, {
+          reply_to_message_id: ctx.message.message_id,
+          ...Markup.removeKeyboard(),
+          ...Markup.inlineKeyboard(cancelBtn, {
+            //set up custom keyboard wraps for two columns
+            wrap: (btn, index, currentRow) => {
+              if (currentRow.length === 2) {
+                return true;
+              } else {
+                return false;
+              }
+            },
+          }),
+        });
+      }
+    });
+
+    bot.command("stats", (ctx) => {
+      const index = users.findIndex(
+        (user) => user.userId === ctx.from.id,
+      );
+      let createdTimers = 0;
+      if (index !== -1) {
+        createdTimers = users[index].timers.length;
+      }
+      ctx.reply(
+        `You have created a total of ${createdTimers} timers since the server was last rebooted at ${formatISO9075(
+          bootDate,
+        )}`,
+        {
+          reply_to_message_id: ctx.message.message_id,
+          ...Markup.removeKeyboard(),
+        },
+      );
+    });
+
+    bot.on("message", async (ctx) => {
       const originalSender = (ctx.message as Message.TextMessage)
         .forward_from?.username;
       const text = (ctx.message as Message.TextMessage).text;
@@ -77,7 +238,7 @@ const reminder = () => {
             effectBtn.push(
               Markup.button.callback(
                 effectName,
-                `${effectName}⏰${formatISO(effectEndDate, {
+                ` ${effectName}⏰${formatISO(effectEndDate, {
                   format: "basic",
                 })}`,
               ),
@@ -107,20 +268,44 @@ const reminder = () => {
         }
       } else if (parsedDurationMs) {
         const formattedDuration =
-          formatDuration(
+          formatDurationFns(
             intervalToDuration({
               start: currentDate,
               end: futureDate,
             }),
           ) || parsedDurationMs + "ms";
-        ctx.reply(`Will remind you about ^ in ${formattedDuration}`, {
-          reply_to_message_id: ctx.message.message_id,
-        });
-        setTimeout(() => {
+        const replyTo = await ctx.reply(
+          `Will remind you about ^ in ${formattedDuration}`,
+          {
+            reply_to_message_id: ctx.message.message_id,
+          },
+        );
+        const timeout = setTimeout(() => {
           ctx.reply("Reminding you about this!", {
             reply_to_message_id: ctx.message.message_id,
           });
         }, parsedDurationMs);
+        const index = users.findIndex(
+          (user) => user.userId === ctx.from.id,
+        );
+        if (index === -1) {
+          users.push({
+            userId: ctx.from.id,
+            timers: [
+              {
+                createdAt: currentDate,
+                timer: timeout,
+                messageId: replyTo.message_id,
+              },
+            ],
+          });
+        } else {
+          users[index].timers.push({
+            createdAt: currentDate,
+            timer: timeout,
+            messageId: replyTo.message_id,
+          });
+        }
       } else {
         if (
           config.LOG_GROUP_ID &&
@@ -151,3 +336,11 @@ const reminder = () => {
 };
 
 export default reminder;
+
+/**
+ * Pauses execution for given amount of seconds
+ * @param sec - amount of seconds
+ */
+function sleep(sec: number) {
+  return new Promise((resolve) => setTimeout(resolve, sec * 1000));
+}
