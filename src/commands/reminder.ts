@@ -197,15 +197,16 @@ const reminder = () => {
       if (index !== -1) {
         createdTimers = users[index].timers.length;
       }
-      ctx.reply(
-        `You have created a total of ${createdTimers} timers since the server was last rebooted at ${formatISO9075(
-          bootDate,
-        )}`,
-        {
-          reply_to_message_id: ctx.message.message_id,
-          ...Markup.removeKeyboard(),
-        },
-      );
+      let returnMessage = `You have created a total of ${createdTimers} timers since the server was last rebooted at ${formatISO9075(
+        bootDate,
+      )}`;
+      if (ctx.from.id === config.ADMIN_TELE_ID) {
+        returnMessage += `\n\nCurrent no. of users: ${users.length}`;
+      }
+      ctx.reply(returnMessage, {
+        reply_to_message_id: ctx.message.message_id,
+        ...Markup.removeKeyboard(),
+      });
     });
 
     bot.on("message", async (ctx) => {
