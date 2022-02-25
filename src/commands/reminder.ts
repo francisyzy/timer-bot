@@ -209,6 +209,12 @@ const reminder = () => {
         .forward_from?.username;
       const text = (ctx.message as Message.TextMessage).text;
       const parsedDurationMs = parse(text);
+      const max = 2147483647; //max 32 bit signed int
+      if (parsedDurationMs > max) {
+        return ctx.reply(
+          "You have exceeded the maximum amount timeout. Max Timeout: 32-bit signed integer (2147483647ms)",
+        );
+      }
       const currentDate = new Date();
       const futureDate = addMilliseconds(
         currentDate,
@@ -231,6 +237,11 @@ const reminder = () => {
             const effectName = line.slice(0, line.indexOf("⏰"));
             const effectDurationMs =
               parse(line.slice(line.indexOf("⏰"))) - messageDelay;
+            const max = 2147483647; //max 32 bit signed int
+            if (effectDurationMs > max) {
+              return; //https://stackoverflow.com/a/18453035
+            }
+
             const effectEndDate = addMilliseconds(
               currentDate,
               effectDurationMs,
