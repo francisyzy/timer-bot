@@ -202,6 +202,16 @@ const reminder = () => {
       )}`;
       if (ctx.from.id === config.ADMIN_TELE_ID) {
         returnMessage += `\n\nCurrent no. of users: ${users.length}`;
+        let activeTimers = 0;
+        users.forEach((user) => {
+          user.timers.forEach((timer) => {
+            // @ts-ignore because timer has _destroyed
+            if (timer.timer["_destroyed"]) {
+              activeTimers++;
+            }
+          });
+        });
+        returnMessage += `\n\nActive timers: ${activeTimers}`;
       }
       ctx.reply(returnMessage, {
         reply_to_message_id: ctx.message.message_id,
