@@ -214,16 +214,7 @@ const reminder = () => {
         .forward_from?.username;
       const text = (ctx.message as Message.TextMessage).text;
       const parsedDurationMs = parse(text);
-      if (parsedDurationMs > max) {
-        return ctx.reply(
-          "You have exceeded the maximum amount timeout. Max Timeout: 32-bit signed integer (2147483647ms)",
-        );
-      }
       const currentDate = new Date();
-      const futureDate = addMilliseconds(
-        currentDate,
-        parsedDurationMs,
-      );
       if (originalSender == "chtwrsbot") {
         const forwardText = (
           ctx.message as Message.TextMessage
@@ -281,6 +272,15 @@ const reminder = () => {
           );
         }
       } else if (parsedDurationMs) {
+        if (parsedDurationMs > max) {
+          return ctx.reply(
+            "You have exceeded the maximum amount timeout. Max Timeout: 32-bit signed integer (2147483647ms)",
+          );
+        }
+        const futureDate = addMilliseconds(
+          currentDate,
+          parsedDurationMs,
+        );
         const formattedDuration =
           formatDurationFns(
             intervalToDuration({
