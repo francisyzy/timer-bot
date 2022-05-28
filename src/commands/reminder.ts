@@ -199,19 +199,23 @@ const reminder = () => {
       }
       let returnMessage = `You have created a total of ${createdTimers} timers since the server was last rebooted at ${formatISO9075(
         bootDate,
-      )}`;
+      )} GMT+8`;
       if (ctx.from.id === config.ADMIN_TELE_ID) {
         returnMessage += `\n\nCurrent no. of users: ${users.length}`;
         let activeTimers = 0;
+        let destroyedTimers = 0;
         users.forEach((user) => {
           user.timers.forEach((timer) => {
             // @ts-ignore because timer has _destroyed
-            if (timer.timer["_destroyed"]) {
+            if (timer.timer["_destroyed"] == false) {
               activeTimers++;
+            } else {
+              destroyedTimers++;
             }
           });
         });
         returnMessage += `\n\nActive timers: ${activeTimers}`;
+        returnMessage += `\n\nDestroyed timers: ${destroyedTimers}`;
       }
       ctx.reply(returnMessage, {
         reply_to_message_id: ctx.message.message_id,
