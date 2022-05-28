@@ -283,8 +283,14 @@ const reminder = () => {
         }
       } else if (parsedDurationMs) {
         if (parsedDurationMs > max) {
+          const maxDate = addMilliseconds(currentDate, max);
           return ctx.reply(
-            "You have exceeded the maximum amount timeout. Max Timeout: 32-bit signed integer (2147483647ms)",
+            `You have exceeded the maximum amount timeout. Max Timeout: 32-bit signed integer (${max}ms = ${formatDurationFns(
+              intervalToDuration({
+                start: currentDate,
+                end: maxDate,
+              }),
+            )})`,
           );
         }
         const futureDate = addMilliseconds(
