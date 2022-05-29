@@ -285,6 +285,62 @@ const reminder = () => {
 <i>For bug reports/suggestions, please create an issue at <a href="http://go.francisyzy.com/timer-bot-issues">Github</a></i>`,
           );
         }
+      } else if (originalSender == "ForayWatchBot") {
+        const forwardText = (
+          ctx.message as Message.TextMessage
+        ).text.split("\n");
+        const messageDelay =
+          currentDate.valueOf() -
+          (ctx.message as Message.TextMessage).forward_date! * 1000;
+
+        let intervalBtn: (InlineKeyboardButton & {
+          hide?: boolean | undefined;
+        })[] = [];
+
+        forwardText.forEach((line) => {
+          if (line.includes("⏰")) {
+            const interval = line.slice(0, line.indexOf("⏰"));
+            const intervalDurationMs =
+              parse(line.slice(line.indexOf("⏰"))) - messageDelay;
+            if (intervalDurationMs > max) {
+              return; //https://stackoverflow.com/a/18453035
+            }
+
+            const intervalEndDate = addMilliseconds(
+              currentDate,
+              intervalDurationMs,
+            );
+            intervalBtn.push(
+              Markup.button.callback(
+                interval,
+                ` ${interval}⏰${formatISO(intervalEndDate, {
+                  format: "basic",
+                })}`,
+              ),
+            );
+          }
+        });
+        if (intervalBtn.length !== 0) {
+          ctx.reply("Select the timer you want to be reminded of", {
+            reply_to_message_id: ctx.message.message_id,
+            ...Markup.removeKeyboard(),
+            ...Markup.inlineKeyboard(intervalBtn, {
+              //set up custom keyboard wraps for two columns
+              wrap: (btn, index, currentRow) => {
+                if (currentRow.length === 1) {
+                  return true;
+                } else {
+                  return false;
+                }
+              },
+            }),
+          });
+        } else {
+          ctx.replyWithHTML(
+            `No timer found. Send a new ／timers from @ForayWatchBot\n
+<i>For bug reports/suggestions, please create an issue at <a href="http://go.francisyzy.com/timer-bot-issues">Github</a></i>`,
+          );
+        }
       } else if (parsedDurationMs) {
         if (parsedDurationMs > max) {
           const maxDate = addMilliseconds(currentDate, max);
