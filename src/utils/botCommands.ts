@@ -15,6 +15,10 @@ export function getBotCommands(): BotCommand[] {
       description: "Find your timer stats",
     },
     {
+      command: "hypixel",
+      description: "Open hypixel timer keyboard",
+    },
+    {
       command: "help",
       description: "Find out more on the bot",
     },

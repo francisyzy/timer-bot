@@ -10,6 +10,7 @@ import bot from "./lib/bot";
 import helper from "./commands/helper";
 import reminder from "./commands/reminder";
 import catchAll from "./commands/catch-all";
+import hypixel from "./commands/hypixel";
 
 //Production Settings
 if (process.env.NODE_ENV === "production") {
@@ -51,6 +52,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 helper();
+hypixel();
 reminder();
 
 //Catch all unknown messages/commands
